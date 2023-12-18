@@ -1,21 +1,25 @@
 import os
 import time
+from dotenv import load_dotenv
 import requests
-from twilio.rest import Client
+import http.client, urllib.parse
+from pushover import Pushover
+from datetime import datetime
 
 url = 'https://one.ufl.edu/apix/soc/schedule/?category=RES&term=2241&course-code=cap4053'
 
-account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
-auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
-client = Client(account_sid, auth_token)
+load_dotenv()
+app_token = os.environ.get('APP_TOKEN')
+user_key = os.environ.get('USER_KEY')
+
+po = Pushover(app_token)
+po.user(user_key)
 
 def send_message(classCode):
-    message = client.messages \
-    .create(
-        body=f"{classCode} HAS A WAITLIST SPOT AVAILABLE!",
-        from_='+18557860335',
-        to='+17274656012'
-    )
+    msg = po.msg(f"Wailist position in {classCode} has opened up")
+    msg.set("title", "Class Notifier")
+    msg.set("priority", "1")
+    po.send(msg)
 
 def getWaitList():
     response = requests.get(url).json()
@@ -28,9 +32,8 @@ def notifyWaitList():
 
     if(waitList['isEligible'] != 'N'):
        send_message(classCode)
-       exit()
     else:
-        print('waitList Full')
+        print(f'waitList Full at {datetime.now().strftime("%H:%M:%S")}')
 
 def main():
     while True:
