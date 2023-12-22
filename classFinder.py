@@ -1,5 +1,6 @@
 import os
 import time
+import sys
 from dotenv import load_dotenv
 import requests
 import http.client, urllib.parse
@@ -20,6 +21,7 @@ def send_message(classCode):
     msg.set("title", "Class Notifier")
     msg.set("priority", "1")
     po.send(msg)
+    sys.exit("Message Sent")
 
 def getWaitList():
     response = requests.get(url).json()
